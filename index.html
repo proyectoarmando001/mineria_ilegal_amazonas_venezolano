@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang='en'>
+    <head>
+        <meta charset='utf-8' />
+        <title>Mineria Ilegal Amazonas Venezolano</title>
+        <meta name='viewport' content='width=device-width, initial-scale=1' />
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+        <script src="//d3js.org/d3.v4.min.js"></script>
+        <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.js'></script>
+        <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.css' rel='stylesheet' />
+        <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+        .airfield {
+            background-image: url('./static/img/airport.png');
+            background-size: cover;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+        } 
+        .mining {
+            background-image: url('./static/img/cross.png');
+            background-size: cover;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+        }                
+        </style>
+    </head>
+    <body>
+        <div id='map'></div>
+
+        <script>
+
+            mapboxgl.accessToken = 'pk.eyJ1IjoiY3Jpc2hlcm5hbmRlem1hcHMiLCJhIjoiY2tvYTRqYTVoMm5mejJwcXdta3UyZzI1byJ9.pqKQkOPvqB-1gmuTdkYzQg';            
+
+            const mapbox_styles = [
+                'mapbox://styles/crishernandezmaps/ckuoa2zvt3i1a19mtelry59ko',
+                'mapbox://styles/crishernandezmaps/ckv2rcu1v2yt214p1bq3ofwpe',
+                'mapbox://styles/mapbox/satellite-v9'
+            ]    
+            
+            zm = 6
+            zm_min = 2
+            const map = new mapboxgl.Map({
+                container: 'map',
+                style: mapbox_styles[1],
+                center: [-64.3203141, 6.0137088],                
+                zoom: zm
+            }); 
+
+            // Add zoom and rotation controls to the map.
+            map.addControl(new mapboxgl.NavigationControl()); 
+            
+            // Add fullscreen control
+            map.addControl(new mapboxgl.FullscreenControl());                                  
+            
+            map.on('load', () => {
+                map.addSource('boundaries', {
+                    type: 'geojson',
+                    data: 'data/BolivarAmazonas.geojson'
+                });
+                map.addLayer({
+                        'id': 'boundaries',
+                        'type': 'fill',
+                        'source': 'boundaries', // reference the data source
+                        'layout': {},
+                        'paint': {
+                            'fill-color': 'green', // blue color fill
+                            'fill-opacity': 0.1
+                    }
+                });
+                map.addLayer({
+                        'id': 'boundaries_',
+                        'type': 'line',
+                        'source': 'boundaries',
+                        'layout': {},
+                        'paint': {
+                            'line-color': 'white',
+                            'line-width': 1
+                    }
+                });    
+                
+                // All data 
+                // Add an image to use as a custom marker
+                map.loadImage(
+                    'img/crosss.png',
+                    (error, image) => { if (error) throw error;
+                        map.addImage('custom-marker', image);
+                        // Add a GeoJSON source with 2 points
+                        map.addSource('points', {
+                            'type': 'geojson',
+                            'data': 'data/all_data_in_points.geojson'
+                        });
+                
+                        // Add a symbol layer
+                        map.addLayer({
+                            'id': 'points',
+                            'type': 'symbol',
+                            'source': 'points',
+                            'layout': {
+                                "icon-allow-overlap": false,
+                                'icon-image': 'custom-marker',
+                                'text-field': ['get', 'title'],
+                                'text-font': [
+                                    'Open Sans Semibold',
+                                    'Arial Unicode MS Bold'
+                                ],
+                                'text-offset': [0, 2],
+                                'text-anchor': 'top'}
+                    });
+                });                             
+
+                // Add a dynamic source.
+                map.addSource('air', {
+                    type: 'geojson',
+                    data: 'https://gist.githubusercontent.com/crishernandezmaps/8990bcb9b5c4599aeb1b825852109439/raw/c6ee6acf3f3a57cbdee7dce949280ff44ecf5d16/airfields.geojson'
+                });
+
+                // Add a circle layer
+                map.addLayer({
+                    'id': 'air',
+                    'type': 'circle',
+                    'source': 'air',
+                    'paint': {
+                    'circle-color': 'rgba(0,0,0,0)',
+                    'circle-radius': 10,
+                    'circle-stroke-width': 2,
+                    'circle-stroke-color': 'tomato'
+                    }
+                });                
+            
+                // Center the map on the coordinates of any clicked circle from the 'circle' layer.
+                map.on('click', 'air', (e) => {
+                    map.flyTo({
+                        center: e.features[0].geometry.coordinates,
+                        zoom: 15               
+                    });
+                });
+                
+                // Change the cursor to a pointer when the it enters a feature in the 'circle' layer.
+                map.on('mouseenter', 'air', () => {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+                
+                // Change it back to a pointer when it leaves.
+                map.on('mouseleave', 'air', () => {
+                    map.getCanvas().style.cursor = '';
+                });
+
+                // Center the map on the coordinates of any clicked circle from the 'circle' layer.
+                map.on('click', 'points', (e) => {
+                    map.flyTo({
+                        center: e.features[0].geometry.coordinates,
+                        zoom: 15               
+                    });
+                });
+                
+                // Change the cursor to a pointer when the it enters a feature in the 'circle' layer.
+                map.on('mouseenter', 'points', () => {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+                
+                // Change it back to a pointer when it leaves.
+                map.on('mouseleave', 'points', () => {
+                    map.getCanvas().style.cursor = '';
+                });                
+            });    
+            
+            // AIRFIELDS //
+            const airfields = 'https://gist.githubusercontent.com/crishernandezmaps/8990bcb9b5c4599aeb1b825852109439/raw/47e5f49a1069e175db4cdf69e25c89086a84ab79/pistas_aterrizaje.geojson'        
+            d3.json(airfields, function(error, airports) {
+                // add markers to map
+                for (const { geometry, properties } of airports.features) {
+                    // create a HTML element for each feature
+                    const el = document.createElement('div');
+                    el.className = 'airfield';
+
+                    // make a marker for each feature and add to the map
+                    new mapboxgl.Marker(el).setLngLat(geometry.coordinates).addTo(map);
+                }   
+            });              
+               
+        </script>        
+    </body>
+</html>
