@@ -3,6 +3,7 @@
     <head>
         <meta charset='utf-8' />
         <title>Mineria Ilegal Amazonas Venezolano</title>
+        <link rel="icon" href="data:;base64,iVBORw0KGgo=">
         <meta name='viewport' content='width=device-width, initial-scale=1' />
         <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
         <script src="//d3js.org/d3.v4.min.js"></script>
@@ -21,7 +22,7 @@
             width: 100%;
         }
         .airfield {
-            background-image: url('./static/img/airport.png');
+            background-image: url('./img/airport.png');
             background-size: cover;
             width: 20px;
             height: 20px;
@@ -50,6 +51,7 @@
                 'mapbox://styles/crishernandezmaps/ckv2rcu1v2yt214p1bq3ofwpe',
                 'mapbox://styles/mapbox/satellite-v9'
             ]    
+
             
             zm = 6
             zm_min = 2
@@ -59,14 +61,15 @@
                 center: [-64.3203141, 6.0137088],                
                 zoom: zm
             }); 
-
+            
             // Add zoom and rotation controls to the map.
             map.addControl(new mapboxgl.NavigationControl()); 
             
             // Add fullscreen control
             map.addControl(new mapboxgl.FullscreenControl());                                  
-            
+
             map.on('load', () => {
+
                 map.addSource('boundaries', {
                     type: 'geojson',
                     data: 'data/BolivarAmazonas.geojson'
@@ -93,34 +96,38 @@
                 });    
                 
                 // All data 
-                // Add an image to use as a custom marker
-                map.loadImage(
-                    'img/crosss.png',
-                    (error, image) => { if (error) throw error;
-                        map.addImage('custom-marker', image);
-                        // Add a GeoJSON source with 2 points
-                        map.addSource('points', {
-                            'type': 'geojson',
-                            'data': 'data/all_data_in_points.geojson'
-                        });
+                // Add a dynamic source.
+                map.addSource('mines', {
+                    type: 'geojson',
+                    data: 'data/all_data.geojson'
+                }); 
                 
-                        // Add a symbol layer
-                        map.addLayer({
-                            'id': 'points',
-                            'type': 'symbol',
-                            'source': 'points',
-                            'layout': {
-                                "icon-allow-overlap": false,
-                                'icon-image': 'custom-marker',
-                                'text-field': ['get', 'title'],
-                                'text-font': [
-                                    'Open Sans Semibold',
-                                    'Arial Unicode MS Bold'
-                                ],
-                                'text-offset': [0, 2],
-                                'text-anchor': 'top'}
-                    });
-                });                             
+                map.addLayer({
+                    'id': 'poly-fill',
+                    'type': 'fill',
+                    'source': 'mines',
+                    'minzoom': 0,
+                    'maxzoom': 22,
+                    'layout': {},
+                    'paint': {
+                        'fill-color': 'red',
+                        'fill-opacity': 0.1
+                    }
+                });   
+                
+                map.addLayer({
+                    'id': 'poly-line',
+                    'type': 'line',
+                    'source': 'mines',
+                    'layout': {},
+                    'paint': {
+                        'line-color': 'red',
+                        'line-opacity': 1,
+                        'line-width': 2
+                    }
+                });                
+
+
 
                 // Add a dynamic source.
                 map.addSource('air', {
