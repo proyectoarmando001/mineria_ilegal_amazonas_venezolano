@@ -36,7 +36,12 @@
             height: 20px;
             border-radius: 50%;
             cursor: pointer;
-        }                
+        }  
+        
+        .mapboxgl-popup {
+            max-width: 400px;
+            font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+        }        
         </style>
     </head>
     <body>
@@ -60,6 +65,9 @@
                 center: [-64.3203141, 6.0137088],                
                 zoom: zm
             }); 
+
+            // DATA
+            const air_field_data = 'data/VenezuelaAirfields-jcortes.geojson'
             
             // Add zoom and rotation controls to the map.
             map.addControl(new mapboxgl.NavigationControl()); 
@@ -127,11 +135,10 @@
                 });                
 
 
-
                 // Add a dynamic source.
                 map.addSource('air', {
                     type: 'geojson',
-                    data: 'https://gist.githubusercontent.com/crishernandezmaps/8990bcb9b5c4599aeb1b825852109439/raw/c6ee6acf3f3a57cbdee7dce949280ff44ecf5d16/airfields.geojson'
+                    data: air_field_data
                 });
 
                 // Add a circle layer
@@ -145,6 +152,13 @@
                     'circle-stroke-width': 2,
                     'circle-stroke-color': 'tomato'
                     }
+                }); 
+                
+                // POPUP
+                // Create a popup, but don't add it to the map yet.
+                const popup = new mapboxgl.Popup({
+                    closeButton: false,
+                    closeOnClick: false
                 });                
             
                 // Center the map on the coordinates of any clicked circle from the 'circle' layer.
@@ -156,13 +170,26 @@
                 });
                 
                 // Change the cursor to a pointer when the it enters a feature in the 'circle' layer.
-                map.on('mouseenter', 'air', () => {
+                map.on('mouseenter', 'air', (e) => {
                     map.getCanvas().style.cursor = 'pointer';
+                   
+                    // Copy coordinates array.
+                    const coordinates = e.features[0].geometry.coordinates.slice();
+                    const description = e.features[0].properties.text;                    
+
+                    while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                        coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                    }
+                    
+                    // Populate the popup and set its coordinates
+                    // based on the feature found.
+                    popup.setLngLat(coordinates).setHTML(description).addTo(map);                    
                 });
                 
                 // Change it back to a pointer when it leaves.
                 map.on('mouseleave', 'air', () => {
                     map.getCanvas().style.cursor = '';
+                    popup.remove();                    
                 });
 
                 // Center the map on the coordinates of any clicked circle from the 'circle' layer.
@@ -185,8 +212,7 @@
             });    
             
             // AIRFIELDS //
-            const airfields = 'https://gist.githubusercontent.com/crishernandezmaps/8990bcb9b5c4599aeb1b825852109439/raw/47e5f49a1069e175db4cdf69e25c89086a84ab79/pistas_aterrizaje.geojson'        
-            d3.json(airfields, function(error, airports) {
+            d3.json(air_field_data, function(error, airports) {
                 // add markers to map
                 for (const { geometry, properties } of airports.features) {
                     // create a HTML element for each feature
