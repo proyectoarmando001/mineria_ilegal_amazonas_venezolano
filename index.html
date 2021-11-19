@@ -67,7 +67,9 @@
             }); 
 
             // DATA
+            const mines_data = 'data/all_data.geojson'
             const air_field_data = 'data/VenezuelaAirfields-jcortes.geojson'
+            const boundaries_data = 'data/BolivarAmazonas.geojson'
             
             // Add zoom and rotation controls to the map.
             map.addControl(new mapboxgl.NavigationControl()); 
@@ -79,7 +81,7 @@
 
                 map.addSource('boundaries', {
                     type: 'geojson',
-                    data: 'data/BolivarAmazonas.geojson'
+                    data: boundaries_data
                 });
                 map.addLayer({
                         'id': 'boundaries',
@@ -106,7 +108,7 @@
                 // Add a dynamic source.
                 map.addSource('mines', {
                     type: 'geojson',
-                    data: 'data/all_data.geojson'
+                    data: mines_data
                 }); 
                 
                 map.addLayer({
@@ -175,15 +177,20 @@
                    
                     // Copy coordinates array.
                     const coordinates = e.features[0].geometry.coordinates.slice();
-                    const description = e.features[0].properties.text;                    
-
-                    while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-                        coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-                    }
+                    const description = e.features[0].properties.text;
                     
                     // Populate the popup and set its coordinates
                     // based on the feature found.
-                    popup.setLngLat(coordinates).setHTML(description).addTo(map);                    
+                    while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                        coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                    }
+
+                    if (description.length > 0) { 
+                        popup.setLngLat(coordinates).setHTML(description).addTo(map);
+                    } else {
+                        //pass           
+                    }
+
                 });
                 
                 // Change it back to a pointer when it leaves.
