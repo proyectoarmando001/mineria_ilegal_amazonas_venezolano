@@ -29,6 +29,14 @@
             border-radius: 50%;
             cursor: pointer;
         } 
+        .airfieldNO {
+            background-image: url('./img/airport_.png');
+            background-size: cover;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+        }         
         .mining {
             background-image: url('./static/img/cross.png');
             background-size: cover;
@@ -145,14 +153,14 @@
 
                 // Add a circle layer
                 map.addLayer({
-                    'id': 'air',
-                    'type': 'circle',
-                    'source': 'air',
-                    'paint': {
-                    'circle-color': 'rgba(0,0,0,0)',
-                    'circle-radius': 10,
-                    'circle-stroke-width': 2,
-                    'circle-stroke-color': 'tomato'
+                        'id': 'air',
+                        'type': 'circle',
+                        'source': 'air',
+                        'paint': {
+                        'circle-color': 'rgba(0,0,0,0)',
+                        'circle-radius': 10,
+                        'circle-stroke-width': 2,
+                        'circle-stroke-color': 'tomato'
                     }
                 }); 
                 
@@ -221,13 +229,17 @@
             // AIRFIELDS //
             d3.json(air_field_data, function(error, airports) {
                 // add markers to map
-                for (const { geometry, properties } of airports.features) {
-                    // create a HTML element for each feature
+                for (const { geometry, properties } of airports.features) {                    
                     const el = document.createElement('div');
-                    el.className = 'airfield';
-
                     // make a marker for each feature and add to the map
-                    new mapboxgl.Marker(el).setLngLat(geometry.coordinates).addTo(map);
+                    if (properties.tlt == 'yes'){
+                        // create a HTML element for each feature
+                        el.className = 'airfield';
+                        new mapboxgl.Marker(el).setLngLat(geometry.coordinates).addTo(map);
+                    } else {
+                        el.className = 'airfieldNO';
+                        new mapboxgl.Marker(el).setLngLat(geometry.coordinates).addTo(map);                        
+                    }
                 }   
             });              
                
