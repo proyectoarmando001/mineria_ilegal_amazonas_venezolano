@@ -28,7 +28,7 @@
             height: 20px;
             border-radius: 50%;
             cursor: pointer;
-        } 
+        }
         .airfieldNO {
             background-image: url('./img/airport_.png');
             background-size: cover;
@@ -36,7 +36,7 @@
             height: 20px;
             border-radius: 50%;
             cursor: pointer;
-        }         
+        }
         .mining {
             background-image: url('./static/img/cross.png');
             background-size: cover;
@@ -44,12 +44,12 @@
             height: 20px;
             border-radius: 50%;
             cursor: pointer;
-        }  
-        
+        }
+
         .mapboxgl-popup {
             max-width: 400px;
             font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
-        }        
+        }
         </style>
     </head>
     <body>
@@ -57,33 +57,33 @@
 
         <script>
 
-            mapboxgl.accessToken = 'pk.eyJ1IjoicHJveWVjdG9hcm1hbmRvMDAxIiwiYSI6ImNrdzUzazR4Z2JybmczMXExdTB3c2tnajMifQ.eR2yKfE2e7GMMU8jYWKZCw';            
+            mapboxgl.accessToken = 'pk.eyJ1IjoicHJveWVjdG9hcm1hbmRvMDAxIiwiYSI6ImNrdzUzazR4Z2JybmczMXExdTB3c2tnajMifQ.eR2yKfE2e7GMMU8jYWKZCw';
 
             const mapbox_styles = [
                 'mapbox://styles/proyectoarmando001/ckw53t8m302cu14lgymvw6234',
                 'mapbox://styles/mapbox/satellite-v9'
-            ]    
+            ]
 
-            
+
             zm = 6
             zm_min = 2
             const map = new mapboxgl.Map({
                 container: 'map',
                 style: mapbox_styles[0],
-                center: [-64.3203141, 6.0137088],                
+                center: [-64.3203141, 6.0137088],
                 zoom: zm
-            }); 
+            });
 
             // DATA
             const mines_data = 'data/all_data.geojson'
-            const air_field_data = 'data/VenezuelaAirfields-b.geojson'
+            const air_field_data = 'data/VenezuelaAirfields-d.geojson'
             const boundaries_data = 'data/BolivarAmazonas.geojson'
-            
+
             // Add zoom and rotation controls to the map.
-            map.addControl(new mapboxgl.NavigationControl()); 
-            
+            map.addControl(new mapboxgl.NavigationControl());
+
             // Add fullscreen control
-            map.addControl(new mapboxgl.FullscreenControl());                                  
+            map.addControl(new mapboxgl.FullscreenControl());
 
             map.on('load', () => {
 
@@ -110,15 +110,15 @@
                             'line-color': 'white',
                             'line-width': 1
                     }
-                });    
-                
-                // All data 
+                });
+
+                // All data
                 // Add a dynamic source.
                 map.addSource('mines', {
                     type: 'geojson',
                     data: mines_data
-                }); 
-                
+                });
+
                 map.addLayer({
                     'id': 'poly-fill',
                     'type': 'fill',
@@ -130,8 +130,8 @@
                         'fill-color': 'red',
                         'fill-opacity': 0.1
                     }
-                });   
-                
+                });
+
                 map.addLayer({
                     'id': 'poly-line',
                     'type': 'line',
@@ -142,7 +142,7 @@
                         'line-opacity': 1,
                         'line-width': 10
                     }
-                });                
+                });
 
 
                 // Add a dynamic source.
@@ -162,74 +162,74 @@
                         'circle-stroke-width': 2,
                         'circle-stroke-color': 'tomato'
                     }
-                }); 
-                
+                });
+
                 // POPUP
                 // Create a popup, but don't add it to the map yet.
                 const popup = new mapboxgl.Popup({
                     closeButton: false,
                     closeOnClick: false
-                });                
-            
+                });
+
                 // Center the map on the coordinates of any clicked circle from the 'circle' layer.
                 map.on('click', 'air', (e) => {
                     map.flyTo({
                         center: e.features[0].geometry.coordinates,
-                        zoom: 15               
+                        zoom: 15
                     });
                 });
-                
+
                 // Change the cursor to a pointer when the it enters a feature in the 'circle' layer.
                 map.on('mouseenter', 'air', (e) => {
                     map.getCanvas().style.cursor = 'pointer';
-                   
+
                     // Copy coordinates array.
                     const coordinates = e.features[0].geometry.coordinates.slice();
                     const description = e.features[0].properties.text;
-                    
+
                     // Populate the popup and set its coordinates
                     // based on the feature found.
                     while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
                         coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
                     }
 
-                    if (description.length > 0) { 
+                    if (description.length > 0) {
                         popup.setLngLat(coordinates).setHTML(description).addTo(map);
                     } else {
-                        //pass           
+                        //pass
                     }
 
                 });
-                
+
                 // Change it back to a pointer when it leaves.
                 map.on('mouseleave', 'air', () => {
                     map.getCanvas().style.cursor = '';
-                    popup.remove();                    
+                    popup.remove();
                 });
 
                 // Center the map on the coordinates of any clicked circle from the 'circle' layer.
                 map.on('click', 'points', (e) => {
                     map.flyTo({
                         center: e.features[0].geometry.coordinates,
-                        zoom: 15               
+                        zoom: 15
                     });
                 });
-                
+
                 // Change the cursor to a pointer when the it enters a feature in the 'circle' layer.
                 map.on('mouseenter', 'points', () => {
                     map.getCanvas().style.cursor = 'pointer';
                 });
-                
+
                 // Change it back to a pointer when it leaves.
                 map.on('mouseleave', 'points', () => {
                     map.getCanvas().style.cursor = '';
-                });                
-            });    
-            
+                });
+            });
+
             // AIRFIELDS //
             d3.json(air_field_data, function(error, airports) {
                 // add markers to map
-                for (const { geometry, properties } of airports.features) {                    
+                for (const { geometry, properties } of airports.features) {
                     const el = document.createElement('div');
                     // make a marker for each feature and add to the map
                     if (properties.tlt == 'yes'){
@@ -238,11 +238,11 @@
                         new mapboxgl.Marker(el).setLngLat(geometry.coordinates).addTo(map);
                     } else {
                         el.className = 'airfieldNO';
-                        new mapboxgl.Marker(el).setLngLat(geometry.coordinates).addTo(map);                        
+                        new mapboxgl.Marker(el).setLngLat(geometry.coordinates).addTo(map);
                     }
-                }   
-            });              
-               
-        </script>        
+                }
+            });
+
+        </script>
     </body>
 </html>
